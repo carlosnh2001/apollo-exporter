@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apollo Exporter</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222535;
+    --border: #2e3250;
+    --accent: #6c63ff;
+    --accent-hover: #5a52e0;
+    --accent-light: #6c63ff22;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e8eaf6;
+    --text-muted: #8b90b8;
+    --radius: 10px;
+    --shadow: 0 4px 24px #0007;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; }
+  header p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+
+  input[type="text"], input[type="number"], input[type="password"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus { border-color: var(--accent); }
+
+  .field { margin-bottom: 16px; }
+  .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+  .tag-input-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    cursor: text;
+    min-height: 42px;
+    transition: border-color .15s;
+  }
+  .tag-input-wrap:focus-within { border-color: var(--accent); }
+  .tag {
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+  .tag-input {
+    border: none; background: transparent; color: var(--text);
+    outline: none; font-size: 0.85rem; flex: 1; min-width: 120px; padding: 2px 4px;
+  }
+
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 8px;
+  }
+  .checkbox-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    user-select: none;
+  }
+  .checkbox-item:hover { border-color: var(--accent); }
+  .checkbox-item input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+  .checkbox-item span { font-size: 0.82rem; }
+
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: background .15s, transform .1s, opacity .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .preview-badge {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+  }
+  .preview-badge span { color: var(--text); font-weight: 700; }
+
+  /* Progress */
+  .progress-wrap {
+    margin-top: 16px;
+    display: none;
+  }
+  .progress-wrap.visible { display: block; }
+  .progress-bar-bg {
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 100%; background: linear-gradient(90deg, var(--accent), #a78bfa);
+    border-radius: 99px;
+    width: 0%;
+    transition: width .4s ease;
+  }
+  .progress-label { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Status pill */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; padding: 4px 12px;
+    border-radius: 20px; font-weight: 600;
+  }
+  .pill-ok { background: #22c55e22; color: var(--green); border: 1px solid var(--green); }
+  .pill-err { background: #ef444422; color: var(--red); border: 1px solid var(--red); }
+  .pill-warn { background: #f59e0b22; color: var(--yellow); border: 1px solid var(--yellow); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* History */
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  .history-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .history-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
+  .history-name { font-size: 0.88rem; font-weight: 600; word-break: break-all; }
+  .history-count {
+    font-size: 0.78rem; font-weight: 700;
+    background: var(--accent-light); color: var(--accent);
+    border-radius: 20px; padding: 3px 10px;
+    white-space: nowrap;
+  }
+
+  #statusMsg {
+    font-size: 0.85rem;
+    margin-top: 12px;
+    padding: 9px 14px;
+    border-radius: 7px;
+    display: none;
+  }
+  #statusMsg.ok { background: #22c55e18; border: 1px solid var(--green); color: var(--green); display: block; }
+  #statusMsg.err { background: #ef444418; border: 1px solid var(--red); color: var(--red); display: block; }
+
+  .api-key-toggle { font-size: 0.78rem; color: var(--accent); cursor: pointer; margin-top: 4px; display: inline-block; }
+  .api-key-section { display: none; }
+  .api-key-section.visible { display: block; margin-top: 12px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 16px; }
+
+  @media (max-width: 560px) {
+    .row { flex-direction: column; }
+    .actions { flex-direction: column; align-items: stretch; }
+    .btn { justify-content: center; }
+  }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid #fff4;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">🚀</div>
+    <div>
+      <h1>Apollo Exporter</h1>
+      <p>Exporta empresas de Apollo.io a CSV con todos los filtros que necesites</p>
+    </div>
+  </header>
+
+  <!-- API Key -->
+  <div class="card">
+    <div class="card-title">Configuración</div>
+    <div id="apiKeyStatus"></div>
+    <span class="api-key-toggle" id="apiKeyToggle" onclick="toggleApiKey()">▶ Usar API Key personalizada</span>
+    <div class="api-key-section" id="apiKeySection">
+      <div class="field" style="margin-top:12px">
+        <label for="apiKeyInput">Apollo API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="Tu API key de Apollo.io">
+        <div class="hint">Solo para esta sesión. Se usa si el servidor no tiene APOLLO_API_KEY configurada.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card">
+    <div class="card-title">Filtros de búsqueda</div>
+
+    <div class="field">
+      <label>Ubicaciones</label>
+      <div class="tag-input-wrap" id="locationsWrap" onclick="document.getElementById('locInput').focus()">
+        <input class="tag-input" id="locInput" placeholder="Añadir ubicación y pulsar Enter…" onkeydown="handleTagKey(event,'locations')">
+      </div>
+      <div class="hint">Ej: <em>Comunidad de Madrid, Spain</em> · <em>Barcelona, Spain</em></div>
+    </div>
+
+    <div class="field">
+      <label>Rangos de empleados</label>
+      <div class="checkbox-grid" id="empRanges">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Sectores / Palabras clave (opcional)</label>
+      <div class="tag-input-wrap" id="kwWrap" onclick="document.getElementById('kwInput').focus()">
+        <input class="tag-input" id="kwInput" placeholder="Añadir sector y pulsar Enter…" onkeydown="handleTagKey(event,'keywords')">
+      </div>
+      <div class="hint">Ej: <em>SaaS</em> · <em>fintech</em> · <em>logística</em></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="row">
+      <div class="field">
+        <label>Revenue mínimo (USD)</label>
+        <input type="number" id="revMin" placeholder="Ej: 1000000">
+      </div>
+      <div class="field">
+        <label>Revenue máximo (USD)</label>
+        <input type="number" id="revMax" placeholder="Ej: 50000000">
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="card">
+    <div class="card-title">Exportar</div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="btnPreview" onclick="doPreview()">
+        🔍 Ver resultados
+      </button>
+      <button class="btn btn-primary" id="btnExport" onclick="doExport()">
+        ⬇️ Exportar CSV
+      </button>
+      <div class="preview-badge" id="previewBadge" style="display:none">
+        Empresas encontradas: <span id="previewCount">—</span>
+        &nbsp;·&nbsp; Páginas: <span id="previewPages">—</span>
+        &nbsp;·&nbsp; Créditos aprox: <span id="previewCredits">—</span>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel">Preparando…</div>
+    </div>
+
+    <div id="statusMsg"></div>
+  </div>
+
+  <!-- History -->
+  <div class="card" id="historyCard" style="display:none">
+    <div class="card-title">Historial de exportaciones</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+</div>
+
+<script>
+// ---- State ----
+const state = {
+  locations: ["Comunidad de Madrid, Spain"],
+  keywords: [],
+};
+
+const EMP_RANGES = [
+  { label: "1–10",       value: "1,10" },
+  { label: "11–20",      value: "11,20" },
+  { label: "21–50",      value: "21,50" },
+  { label: "51–100",     value: "51,100" },
+  { label: "101–200",    value: "101,200" },
+  { label: "201–500",    value: "201,500" },
+  { label: "501–1.000",  value: "501,1000" },
+  { label: "1.001–2.000",value: "1001,2000" },
+  { label: "2.001–5.000",value: "2001,5000" },
+  { label: "5.001–10.000",value: "5001,10000" },
+  { label: "10.001+",   value: "10001,999999" },
+];
+const DEFAULT_EMP = new Set(["51,100","101,200","201,500","501,1000","1001,2000","2001,5000","5001,10000","10001,999999"]);
+
+// ---- Init ----
+function init() {
+  // Render employee range checkboxes
+  const grid = document.getElementById('empRanges');
+  EMP_RANGES.forEach(r => {
+    const lbl = document.createElement('label');
+    lbl.className = 'checkbox-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = r.value;
+    cb.checked = DEFAULT_EMP.has(r.value);
+    const sp = document.createElement('span');
+    sp.textContent = r.label;
+    lbl.appendChild(cb);
+    lbl.appendChild(sp);
+    grid.appendChild(lbl);
+  });
+
+  // Render default location tags
+  state.locations.forEach(l => addTag('locations', l));
+
+  // Check server health / api key
+  checkHealth();
+  loadHistory();
+}
+
+// ---- Health check ----
+async function checkHealth() {
+  try {
+    const r = await fetch('/health');
+    const d = await r.json();
+    const el = document.getElementById('apiKeyStatus');
+    if (d.api_key_set) {
+      el.innerHTML = '<span class="status-pill pill-ok"><span class="dot"></span>API Key configurada en el servidor</span>';
+    } else {
+      el.innerHTML = '<span class="status-pill pill-warn"><span class="dot"></span>Sin API Key en servidor — introduce la tuya abajo</span>';
+      document.getElementById('apiKeySection').classList.add('visible');
+      document.getElementById('apiKeyToggle').style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+// ---- Tags ----
+function handleTagKey(e, type) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,$/, '');
+    if (val) { addTag(type, val); e.target.value = ''; }
+  } else if (e.key === 'Backspace' && e.target.value === '') {
+    const arr = type === 'locations' ? state.locations : state.keywords;
+    if (arr.length) removeTag(type, arr[arr.length - 1]);
+  }
+}
+
+function addTag(type, value) {
+  const arr = type === 'locations' ? state.locations : state.keywords;
+  if (arr.includes(value)) return;
+  arr.push(value);
+  renderTags(type);
+}
+
+function removeTag(type, value) {
+  const arr = type === 'locations' ? state.locations : state.keywords;
+  const idx = arr.indexOf(value);
+  if (idx > -1) arr.splice(idx, 1);
+  renderTags(type);
+}
+
+function renderTags(type) {
+  const wrapId = type === 'locations' ? 'locationsWrap' : 'kwWrap';
+  const inputId = type === 'locations' ? 'locInput' : 'kwInput';
+  const arr = type === 'locations' ? state.locations : state.keywords;
+  const wrap = document.getElementById(wrapId);
+  const input = document.getElementById(inputId);
+  // Remove old tags (keep the input)
+  [...wrap.querySelectorAll('.tag')].forEach(t => t.remove());
+  arr.forEach(v => {
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `<span>${v}</span><button onclick="removeTag('${type}','${v.replace(/'/g,"\\'")}')">×</button>`;
+    wrap.insertBefore(tag, input);
+  });
+}
+
+// ---- API Key toggle ----
+function toggleApiKey() {
+  const sec = document.getElementById('apiKeySection');
+  const tog = document.getElementById('apiKeyToggle');
+  const open = sec.classList.toggle('visible');
+  tog.textContent = (open ? '▼' : '▶') + ' Usar API Key personalizada';
+}
+
+// ---- Build params ----
+function buildParams() {
+  const empRanges = [...document.querySelectorAll('#empRanges input:checked')].map(c => c.value);
+  const revMin = document.getElementById('revMin').value;
+  const revMax = document.getElementById('revMax').value;
+  const apiKey = document.getElementById('apiKeyInput').value.trim();
+  return {
+    locations: state.locations.length ? state.locations : ["Comunidad de Madrid, Spain"],
+    employee_ranges: empRanges,
+    keyword_tags: state.keywords,
+    ...(revMin ? { revenue_min: parseInt(revMin) } : {}),
+    ...(revMax ? { revenue_max: parseInt(revMax) } : {}),
+    ...(apiKey ? { api_key: apiKey } : {}),
+  };
+}
+
+// ---- Preview ----
+async function doPreview() {
+  const btn = document.getElementById('btnPreview');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Consultando…';
+  hideStatus();
+  try {
+    const res = await fetch('/api/preview', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(buildParams()),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.detail || 'Error desconocido');
+    document.getElementById('previewCount').textContent = d.total.toLocaleString('es-ES');
+    document.getElementById('previewPages').textContent = d.pages;
+    document.getElementById('previewCredits').textContent = d.pages + ' créditos';
+    document.getElementById('previewBadge').style.display = '';
+  } catch(e) {
+    showStatus('err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 Ver resultados';
+  }
+}
+
+// ---- Export ----
+async function doExport() {
+  const params = buildParams();
+  if (!params.employee_ranges.length) { showStatus('err', 'Selecciona al menos un rango de empleados.'); return; }
+
+  const btnExport = document.getElementById('btnExport');
+  const btnPreview = document.getElementById('btnPreview');
+  btnExport.disabled = true;
+  btnPreview.disabled = true;
+  btnExport.innerHTML = '<div class="spinner"></div> Exportando…';
+  hideStatus();
+
+  const pw = document.getElementById('progressWrap');
+  const pb = document.getElementById('progressBar');
+  const pl = document.getElementById('progressLabel');
+  pw.classList.add('visible');
+  pb.style.width = '5%';
+  pl.textContent = 'Conectando con Apollo…';
+
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({detail: res.statusText}));
+      throw new Error(err.detail || 'Error al exportar');
+    }
+
+    // Stream the response into a blob
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+
+    pb.style.width = '15%';
+    pl.textContent = 'Descargando datos…';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      // Animate progress (fake — we don't know total bytes)
+      const curW = parseFloat(pb.style.width);
+      if (curW < 90) pb.style.width = Math.min(curW + 3, 90) + '%';
+      pl.textContent = `Recibiendo… ${(received / 1024).toFixed(0)} KB`;
+    }
+
+    pb.style.width = '100%';
+    pl.textContent = 'Preparando archivo…';
+
+    const blob = new Blob(chunks, { type: 'text/csv;charset=utf-8-sig;' });
+    const cd = res.headers.get('content-disposition') || '';
+    const match = cd.match(/filename="([^"]+)"/);
+    const filename = match ? match[1] : `apollo_export_${Date.now()}.csv`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showStatus('ok', `✅ Exportación completa: <strong>${filename}</strong>`);
+    await loadHistory();
+  } catch(e) {
+    showStatus('err', '❌ ' + e.message);
+    pb.style.width = '0%';
+  } finally {
+    btnExport.disabled = false;
+    btnPreview.disabled = false;
+    btnExport.innerHTML = '⬇️ Exportar CSV';
+    setTimeout(() => pw.classList.remove('visible'), 3000);
+  }
+}
+
+// ---- History ----
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/history');
+    const items = await res.json();
+    const card = document.getElementById('historyCard');
+    const list = document.getElementById('historyList');
+    if (!items.length) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    list.innerHTML = '';
+    items.forEach(item => {
+      const locs = (item.filters?.locations || []).join(', ');
+      const ts = new Date(item.timestamp).toLocaleString('es-ES');
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = `
+        <div>
+          <div class="history-name">📄 ${item.filename}</div>
+          <div class="history-meta">${ts} · ${locs}</div>
+        </div>
+        <div class="history-count">${(item.total || 0).toLocaleString('es-ES')} empresas</div>
+      `;
+      list.appendChild(div);
+    });
+  } catch(e) {}
+}
+
+// ---- Status helpers ----
+function showStatus(type, msg) {
+  const el = document.getElementById('statusMsg');
+  el.className = type;
+  el.innerHTML = msg;
+}
+function hideStatus() {
+  const el = document.getElementById('statusMsg');
+  el.className = '';
+  el.style.display = 'none';
+  el.innerHTML = '';
+}
+
+// ---- Run ----
+init();
+</script>
+</body>
+</html>
