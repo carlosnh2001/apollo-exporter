@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: apollo-exporter
+    runtime: docker
+    plan: free
+    envVars:
+      - key: APOLLO_API_KEY
+        sync: false
+    healthCheckPath: /health
